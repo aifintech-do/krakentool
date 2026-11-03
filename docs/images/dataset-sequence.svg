@@ -1,0 +1,88 @@
+<!-- Copyright (C) 2026 aifintech-do. SPDX-License-Identifier: GPL-3.0-or-later. See LICENSE. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 1120" role="img" aria-labelledby="seqTitle seqDesc">
+  <title id="seqTitle">Backtesting dataset sequence</title>
+  <desc id="seqDesc">Sequence from krakentool dataset through the kraken CLI to public OHLC and Trades, then gap handling and the VWAP check.</desc>
+  <defs>
+    <marker id="seqArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 1 L9 5 L0 9 Z" fill="#1b2430"/>
+    </marker>
+    <style>
+      .ink { fill: #1b2430; font-family: "Segoe UI", Helvetica, Arial, sans-serif; }
+      .muted { fill: #52606d; font-family: "Segoe UI", Helvetica, Arial, sans-serif; }
+      .teal { fill: #0f6e56; font-family: "Segoe UI", Helvetica, Arial, sans-serif; }
+      .amber { fill: #8a5a12; font-family: "Segoe UI", Helvetica, Arial, sans-serif; }
+      .life { stroke: #c5ced6; stroke-width: 1.25; stroke-dasharray: 4 4; }
+      .msg { fill: none; stroke: #1b2430; stroke-width: 1.5; }
+      .ret { fill: none; stroke: #1b2430; stroke-width: 1.5; stroke-dasharray: 5 4; }
+      .frame { fill: #f3f7f5; stroke: #0f6e56; stroke-width: 1.25; stroke-dasharray: 5 4; }
+      .opt { fill: #fbf8f1; stroke: #c4a46a; stroke-width: 1.25; stroke-dasharray: 5 4; }
+      .note { fill: #ffffff; stroke: #d5dde6; }
+    </style>
+  </defs>
+  <rect width="1040" height="1120" fill="#f7f8fa" rx="16"/>
+  <text class="ink" x="32" y="40" font-size="20" font-weight="650">Dataset request sequence</text>
+  <text class="muted" x="32" y="64" font-size="13">Solid arrows are requests. Dashed arrows are responses. Forex pairs add --asset-class forex.</text>
+
+  <rect x="48" y="88" width="120" height="40" rx="8" fill="#1b2430"/>
+  <text x="108" y="113" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="650" font-family="Segoe UI, Helvetica, Arial, sans-serif">You</text>
+  <rect x="250" y="88" width="160" height="40" rx="8" fill="#0f6e56"/>
+  <text x="330" y="113" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="650" font-family="Segoe UI, Helvetica, Arial, sans-serif">krakentool</text>
+  <rect x="490" y="88" width="140" height="40" rx="8" fill="#1a4f8b"/>
+  <text x="560" y="113" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="650" font-family="Segoe UI, Helvetica, Arial, sans-serif">kraken CLI</text>
+  <rect x="760" y="88" width="220" height="40" rx="8" fill="#3d4a57"/>
+  <text x="870" y="113" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="650" font-family="Segoe UI, Helvetica, Arial, sans-serif">Public REST</text>
+
+  <line class="life" x1="108" y1="128" x2="108" y2="1080"/>
+  <line class="life" x1="330" y1="128" x2="330" y2="1080"/>
+  <line class="life" x1="560" y1="128" x2="560" y2="1080"/>
+  <line class="life" x1="870" y1="128" x2="870" y2="1080"/>
+
+  <line class="msg" x1="116" y1="176" x2="322" y2="176" marker-end="url(#seqArrow)"/>
+  <text class="ink" x="219" y="168" text-anchor="middle" font-size="12">dataset BTC/USD EUR/USD</text>
+
+  <rect class="frame" x="188" y="204" width="812" height="800" rx="10"/>
+  <text class="teal" x="204" y="226" font-size="12" font-weight="650">loop  each symbol</text>
+
+  <line class="msg" x1="330" y1="262" x2="552" y2="262" marker-end="url(#seqArrow)"/>
+  <text class="ink" x="441" y="254" text-anchor="middle" font-size="12">ohlc --interval 1440 --since</text>
+  <line class="msg" x1="560" y1="300" x2="862" y2="300" marker-end="url(#seqArrow)"/>
+  <text class="ink" x="711" y="292" text-anchor="middle" font-size="12">OHLC</text>
+  <line class="ret" x1="862" y1="338" x2="568" y2="338" marker-end="url(#seqArrow)"/>
+  <text class="ink" x="711" y="330" text-anchor="middle" font-size="12">candles and last</text>
+  <line class="ret" x1="552" y1="376" x2="338" y2="376" marker-end="url(#seqArrow)"/>
+  <text class="ink" x="441" y="368" text-anchor="middle" font-size="12">JSON page</text>
+
+  <rect class="note" x="360" y="394" width="480" height="46" rx="8"/>
+  <text class="muted" x="600" y="412" text-anchor="middle" font-size="12">since = last, then request the next page</text>
+  <text class="muted" x="600" y="430" text-anchor="middle" font-size="12">Stop if last stalls, the page is empty, or last passes the end</text>
+
+  <rect class="opt" x="208" y="458" width="772" height="176" rx="8"/>
+  <text class="amber" x="224" y="480" font-size="12" font-weight="650">opt  --minutes</text>
+  <line class="msg" x1="330" y1="512" x2="552" y2="512" marker-end="url(#seqArrow)"/>
+  <text class="ink" x="441" y="504" text-anchor="middle" font-size="12">ohlc --interval 1 --since</text>
+  <line class="msg" x1="560" y1="548" x2="862" y2="548" marker-end="url(#seqArrow)"/>
+  <text class="ink" x="711" y="540" text-anchor="middle" font-size="12">OHLC</text>
+  <line class="ret" x1="862" y1="584" x2="568" y2="584" marker-end="url(#seqArrow)"/>
+  <text class="ink" x="711" y="576" text-anchor="middle" font-size="12">minute candles and last</text>
+  <line class="ret" x1="552" y1="612" x2="338" y2="612" marker-end="url(#seqArrow)"/>
+  <text class="ink" x="441" y="604" text-anchor="middle" font-size="12">JSON page</text>
+
+  <rect class="opt" x="208" y="654" width="772" height="176" rx="8"/>
+  <text class="amber" x="224" y="676" font-size="12" font-weight="650">opt  --ticks</text>
+  <line class="msg" x1="330" y1="708" x2="552" y2="708" marker-end="url(#seqArrow)"/>
+  <text class="ink" x="441" y="700" text-anchor="middle" font-size="12">trades --count 1000 --since</text>
+  <line class="msg" x1="560" y1="744" x2="862" y2="744" marker-end="url(#seqArrow)"/>
+  <text class="ink" x="711" y="736" text-anchor="middle" font-size="12">Trades</text>
+  <line class="ret" x1="862" y1="780" x2="568" y2="780" marker-end="url(#seqArrow)"/>
+  <text class="ink" x="711" y="772" text-anchor="middle" font-size="12">trades and last (nanoseconds)</text>
+  <line class="ret" x1="552" y1="808" x2="338" y2="808" marker-end="url(#seqArrow)"/>
+  <text class="ink" x="441" y="800" text-anchor="middle" font-size="12">JSON page</text>
+
+  <path class="msg" d="M330 848 H408 V876 H338" marker-end="url(#seqArrow)"/>
+  <text class="ink" x="420" y="866" font-size="12">apply the gap policy</text>
+  <path class="msg" d="M330 908 H408 V936 H338" marker-end="url(#seqArrow)"/>
+  <text class="ink" x="420" y="926" font-size="12">tick VWAP check</text>
+
+  <line class="ret" x1="322" y1="1044" x2="116" y2="1044" marker-end="url(#seqArrow)"/>
+  <text class="ink" x="219" y="1036" text-anchor="middle" font-size="12">manifest.json and JSONL</text>
+</svg>

@@ -1,0 +1,23 @@
+[project]
+name = "krakentool"
+version = "0.1.0"
+description = "Kraken Spot WebSocket API v2 market-data consumer for crypto and forex"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
+classifiers = [
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Programming Language :: Python :: 3",
+]
+dependencies = ["websockets>=13,<16"]
+
+[project.scripts]
+krakentool = "krakentool.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["krakentool"]

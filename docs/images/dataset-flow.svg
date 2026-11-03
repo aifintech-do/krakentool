@@ -1,0 +1,109 @@
+<!-- Copyright (C) 2026 aifintech-do. SPDX-License-Identifier: GPL-3.0-or-later. See LICENSE. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 860" role="img" aria-labelledby="flowTitle flowDesc">
+  <title id="flowTitle">Backtesting dataset flow</title>
+  <desc id="flowDesc">krakentool dataset pages daily OHLC, optional minute candles, and optional trade ticks, applies a gap policy, checks tick VWAP, then writes JSONL files.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#3d4a57"/>
+    </marker>
+    <style>
+      .bg { fill: #f7f8fa; }
+      .card { fill: #ffffff; stroke: #d5dde6; }
+      .ink { fill: #1b2430; font-family: "Segoe UI", Helvetica, Arial, sans-serif; }
+      .muted { fill: #52606d; font-family: "Segoe UI", Helvetica, Arial, sans-serif; }
+      .line { fill: none; stroke: #3d4a57; stroke-width: 1.5; }
+      .teal { fill: #0f6e56; }
+      .amber { fill: #8a5a12; }
+      .blue { fill: #1a4f8b; }
+      .on { fill: #ffffff; font-family: "Segoe UI", Helvetica, Arial, sans-serif; }
+      .chip { fill: #ffffff; stroke: #d5dde6; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="960" height="860" rx="16"/>
+  <text class="ink" x="32" y="40" font-size="20" font-weight="650">Backtesting dataset</text>
+  <text class="muted" x="32" y="64" font-size="13">Public OHLC and trades. No WebSocket and no API key.</text>
+
+  <rect class="card" x="250" y="86" width="460" height="78" rx="12"/>
+  <text class="ink" x="480" y="116" font-size="15" font-weight="650" text-anchor="middle">krakentool dataset</text>
+  <text class="muted" x="480" y="140" font-size="12.5" text-anchor="middle">symbols, --start, --end, drill window, --gaps</text>
+
+  <path class="line" marker-end="url(#arrow)" d="M480 164 L480 198"/>
+  <path class="line" d="M170 198 L790 198"/>
+  <path class="line" marker-end="url(#arrow)" d="M170 198 L170 228"/>
+  <path class="line" marker-end="url(#arrow)" d="M480 198 L480 228"/>
+  <path class="line" marker-end="url(#arrow)" d="M790 198 L790 228"/>
+
+  <rect class="card" x="24" y="228" width="292" height="196" rx="12"/>
+  <rect class="teal" x="40" y="244" width="22" height="22" rx="11"/>
+  <text class="on" x="51" y="260" font-size="12" font-weight="650" text-anchor="middle">1</text>
+  <text class="ink" x="72" y="260" font-size="15" font-weight="650">Daily OHLC</text>
+  <text class="teal" x="292" y="260" font-size="11" font-weight="650" text-anchor="end">always</text>
+  <text class="muted" x="40" y="292" font-size="13">Wide window</text>
+  <text class="muted" x="40" y="314" font-size="13">interval 1440 minutes</text>
+  <text class="muted" x="40" y="336" font-size="13">Next page uses last as since</text>
+  <text class="muted" x="40" y="358" font-size="13">Stop on a stalled cursor, an</text>
+  <text class="muted" x="40" y="378" font-size="13">empty page, or past the end</text>
+  <text class="muted" x="40" y="400" font-size="13">At most 720 candles</text>
+
+  <rect class="card" x="334" y="228" width="292" height="196" rx="12"/>
+  <rect class="amber" x="350" y="244" width="22" height="22" rx="11"/>
+  <text class="on" x="361" y="260" font-size="12" font-weight="650" text-anchor="middle">2</text>
+  <text class="ink" x="382" y="260" font-size="15" font-weight="650">Minute OHLC</text>
+  <text class="amber" x="610" y="260" font-size="11" font-weight="650" text-anchor="end">--minutes</text>
+  <text class="muted" x="350" y="292" font-size="13">Drill window</text>
+  <text class="muted" x="350" y="314" font-size="13">interval 1 minute</text>
+  <text class="muted" x="350" y="336" font-size="13">Same last cursor</text>
+  <text class="muted" x="350" y="358" font-size="13">About 12 hours of history</text>
+  <text class="muted" x="350" y="380" font-size="13">because of the 720 cap</text>
+  <text class="muted" x="350" y="402" font-size="13">Deduped by open time</text>
+
+  <rect class="card" x="644" y="228" width="292" height="196" rx="12"/>
+  <rect class="blue" x="660" y="244" width="22" height="22" rx="11"/>
+  <text class="on" x="671" y="260" font-size="12" font-weight="650" text-anchor="middle">3</text>
+  <text class="ink" x="692" y="260" font-size="15" font-weight="650">Trade ticks</text>
+  <text class="blue" x="920" y="260" font-size="11" font-weight="650" text-anchor="end">--ticks</text>
+  <text class="muted" x="660" y="292" font-size="13">Same drill window</text>
+  <text class="muted" x="660" y="314" font-size="13">1000 trades per page</text>
+  <text class="muted" x="660" y="336" font-size="13">last is nanoseconds</text>
+  <text class="muted" x="660" y="358" font-size="13">Deduped by trade_id</text>
+  <text class="muted" x="660" y="380" font-size="13">Stop at the window end</text>
+  <text class="muted" x="660" y="402" font-size="13">Default cap is 30 pages</text>
+
+  <path class="line" marker-end="url(#arrow)" d="M170 424 L170 456"/>
+  <path class="line" marker-end="url(#arrow)" d="M480 424 L480 456"/>
+  <path class="line" marker-end="url(#arrow)" d="M790 424 L790 620"/>
+
+  <rect class="card" x="24" y="456" width="602" height="124" rx="12"/>
+  <rect x="40" y="472" width="22" height="22" rx="11" fill="#3d4a57"/>
+  <text class="on" x="51" y="488" font-size="12" font-weight="650" text-anchor="middle">4</text>
+  <text class="ink" x="72" y="488" font-size="15" font-weight="650">Gap policy</text>
+  <text class="muted" x="40" y="520" font-size="13">Holes between the first and last collected candle</text>
+  <text class="ink" x="40" y="548" font-size="13" font-weight="650">exclude</text>
+  <text class="muted" x="108" y="548" font-size="13">leave the bar out, still listed in gaps.json</text>
+  <text class="ink" x="40" y="570" font-size="13" font-weight="650">forward-fill</text>
+  <text class="muted" x="132" y="570" font-size="13">previous close, volume 0, count 0</text>
+
+  <path class="line" marker-end="url(#arrow)" d="M325 580 L325 612"/>
+  <rect class="card" x="24" y="628" width="912" height="100" rx="12"/>
+  <rect class="blue" x="40" y="644" width="22" height="22" rx="11"/>
+  <text class="on" x="51" y="660" font-size="12" font-weight="650" text-anchor="middle">5</text>
+  <text class="ink" x="72" y="660" font-size="15" font-weight="650">Tick check</text>
+  <text class="muted" x="40" y="690" font-size="13">Candles that sit fully inside the drill window. Forward-filled bars are skipped.</text>
+  <text class="muted" x="40" y="712" font-size="13">Count must match. Volume and VWAP must be within 0.0001 relative error.</text>
+
+  <text class="ink" x="40" y="760" font-size="13" font-weight="650">6  Written under --out</text>
+  <g font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#1b2430">
+    <rect class="chip" x="24" y="776" width="140" height="36" rx="8"/>
+    <text x="94" y="799" text-anchor="middle">manifest.json</text>
+    <rect class="chip" x="176" y="776" width="148" height="36" rx="8"/>
+    <text x="250" y="799" text-anchor="middle">ohlcv-1d.jsonl</text>
+    <rect class="chip" x="336" y="776" width="148" height="36" rx="8"/>
+    <text x="410" y="799" text-anchor="middle">ohlcv-1m.jsonl</text>
+    <rect class="chip" x="496" y="776" width="132" height="36" rx="8"/>
+    <text x="562" y="799" text-anchor="middle">trades.jsonl</text>
+    <rect class="chip" x="640" y="776" width="156" height="36" rx="8"/>
+    <text x="718" y="799" text-anchor="middle">validation.jsonl</text>
+    <rect class="chip" x="808" y="776" width="128" height="36" rx="8"/>
+    <text x="872" y="799" text-anchor="middle">gaps.json</text>
+  </g>
+</svg>
