@@ -1,6 +1,7 @@
 / krakentool kdb schema and JSON ingest.
 / Copyright (C) 2026 aifintech-do
 / SPDX-License-Identifier: GPL-3.0-or-later
+/ Runs on kdb+, licensed separately by KX Systems, Inc. See NOTICE.
 / Tables are filled by .kt.fan. The tickerplant replaces .kt.fan so it only publishes.
 
 .kt.at:{[d;k] $[k in key d; d k; `]}

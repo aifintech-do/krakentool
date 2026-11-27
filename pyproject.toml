@@ -5,7 +5,7 @@ description = "Kraken Spot WebSocket API v2 market-data consumer for crypto and 
 readme = "README.md"
 requires-python = ">=3.11"
 license = "GPL-3.0-or-later"
-license-files = ["LICENSE"]
+license-files = ["LICENSE", "NOTICE"]
 classifiers = [
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Programming Language :: Python :: 3",

@@ -1,6 +1,7 @@
 / Load a captured krakentool NDJSON file into the in-memory tables.
 / Copyright (C) 2026 aifintech-do
 / SPDX-License-Identifier: GPL-3.0-or-later
+/ Runs on kdb+, licensed separately by KX Systems, Inc. See NOTICE.
 / q kdb/stdin.q events.jsonl
 
 .kdb.dir:{

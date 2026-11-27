@@ -1,6 +1,7 @@
 / Read krakentool NDJSON from stdin and forward each line to a tickerplant.
 / Copyright (C) 2026 aifintech-do
 / SPDX-License-Identifier: GPL-3.0-or-later
+/ Runs on kdb+, licensed separately by KX Systems, Inc. See NOTICE.
 / krakentool BTC/USD EUR/USD --channels ticker,trade | q kdb/feed.q localhost:5010
 / Lines are forwarded when stdin closes.
 

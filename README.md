@@ -75,7 +75,7 @@ uv run krakentool dataset BTC/USD EUR/USD \
 
 Live events go to a tickerplant that fans rows out and does not keep them. A realtime process subscribes and inserts. `--q localhost:5010` publishes each event over kdb IPC as it arrives. `--q-only` skips stdout. The pipe path, `kdb/feed.q`, forwards NDJSON when stdin closes. A captured file loads with `kdb/stdin.q`. `kdb/hdb.q` turns `dataset/` into date partitions `ohlcv1d`, `ohlcv1m`, and `trades`.
 
-`q` is a separate install. Put the script name before `-p`. `KRAKENTOOL_PYKX=1` sends the same `.kt.ingest` call through PyKX when it is installed. Flow and sequence figures: [kdb/q](docs/FEATURES.md#kdbq).
+`q` is a separate install, and kdb+ itself is not part of this package. You need your own KX license: a commercial agreement, or KDB-X Community Edition under KX's usage restrictions. Put the script name before `-p`. `KRAKENTOOL_PYKX=1` sends the same `.kt.ingest` call through PyKX when it is installed. Flow and sequence figures: [kdb/q](docs/FEATURES.md#kdbq). The KX license and trademark notice is in [NOTICE](NOTICE).
 
 ```bash
 q kdb/tick.q -p 5010
@@ -91,3 +91,5 @@ krakentool is free software: you can redistribute it and/or modify it under the 
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the [GNU General Public License](LICENSE) for details.
 
 Copyright (C) 2026 aifintech-do. `krakentool --version` prints the short notice. The `websockets` dependency stays under the BSD 3-Clause license that ships with that package.
+
+kdb+ and q are products of KX Systems, Inc. This project does not include the interpreter or a license key. Running the scripts in `kdb/` requires your own KX license, described in [NOTICE](NOTICE): the [kdb+ licensing guide](https://code.kx.com/q/learn/licensing/), the [On-Premise Licenced Software Terms, version 5.0](https://kx.com/legal/on-premise-licenced-software-terms/), and the [KDB-X Community Edition restrictions](https://code.kx.com/licensing/usage-restrictions.html). KX and kdb+ are registered trademarks of KX Systems, Inc. krakentool is not affiliated with or endorsed by KX.

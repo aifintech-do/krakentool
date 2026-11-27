@@ -1,0 +1,67 @@
+krakentool
+Copyright (C) 2026 aifintech-do
+
+krakentool is free software under the GNU General Public License, version 3
+or any later version. The full text is the LICENSE file. The scripts in kdb/
+are original source under that same license. They are not KX software, and
+this repository does not include KX's tick.q.
+
+kdb+ and q
+----------
+
+kdb+ and the q language are products of KX Systems, Inc. This repository does
+not include the kdb+ interpreter or a license key (k4.lic or kc.lic). The
+scripts in kdb/ run only inside a kdb+ process that you license from KX.
+
+All use of kdb+ is governed by a KX license. Without one, kdb+ signals
+'k4.lic and aborts. KX documents that requirement here:
+
+https://code.kx.com/q/learn/licensing/
+
+Commercial kdb+ is covered by your agreement with KX. The public terms that
+agreement incorporates, as published by KX, are:
+
+- On-Premise Licenced Software Terms, version 5.0, last revised 1 October 2026
+  https://kx.com/legal/on-premise-licenced-software-terms/
+- General Terms and Conditions, version 5.0, last revised 1 October 2026
+  https://kx.com/legal/terms-and-conditions-v5-0/
+
+Those terms grant a limited, non-transferable, non-exclusive license, without
+right of sublicense, to install and execute the Licensed Software in
+executable form for internal use during the subscription term. They also
+restrict combining or linking the Licensed Software with copyleft materials.
+Read that restriction before loading these GPL scripts into a commercially
+licensed kdb+. Commercial licensing questions go to sales@kx.com. License
+administration questions from a Designated Contact go to licadmin@kx.com.
+
+KDB-X Community Edition is free for personal and commercial use, subject to
+KX's usage restrictions:
+
+https://code.kx.com/licensing/usage-restrictions.html
+
+PyKX
+----
+
+PyKX is optional and is not installed by this project. Set KRAKENTOOL_PYKX=1
+only when you have installed it yourself. KX publishes its license at:
+
+https://github.com/KxSystems/pykx/blob/main/LICENSE.txt
+
+PyKX source is under the Apache License 2.0. The q.so library shipped inside
+PyKX is under KX's Software License for q.so, version 1.1, last revised June
+2026. That license allows q.so only for compiling and running PyKX or KDB-X
+software from KX. A commercial PyKX or KDB-X license still needs a separate
+KX license for q.so.
+
+Trademarks
+----------
+
+KX and kdb+ are registered trademarks of KX Systems, Inc. q and KDB-X are
+used here to name KX products. krakentool is not affiliated with, sponsored
+by, or endorsed by KX Systems, Inc.
+
+Other components
+----------------
+
+The Python websockets package stays under the BSD 3-Clause license that
+ships with that package.
