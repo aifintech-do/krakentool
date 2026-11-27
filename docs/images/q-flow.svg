@@ -1,0 +1,101 @@
+<!-- Copyright (C) 2026 aifintech-do. SPDX-License-Identifier: GPL-3.0-or-later. See LICENSE. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 840" role="img" aria-labelledby="qFlowTitle qFlowDesc">
+  <title id="qFlowTitle">kdb/q flow</title>
+  <desc id="qFlowDesc">Live krakentool events reach a tickerplant over IPC or through a pipe. A captured file loads in memory. A dataset directory becomes a date-partitioned historical database.</desc>
+  <defs>
+    <marker id="qArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#3d4a57"/>
+    </marker>
+    <style>
+      .bg { fill: #f7f8fa; }
+      .card { fill: #ffffff; stroke: #d5dde6; }
+      .ink { fill: #1b2430; font-family: "Segoe UI", Helvetica, Arial, sans-serif; }
+      .muted { fill: #52606d; font-family: "Segoe UI", Helvetica, Arial, sans-serif; }
+      .line { fill: none; stroke: #3d4a57; stroke-width: 1.5; }
+      .teal { fill: #0f6e56; }
+      .amber { fill: #8a5a12; }
+      .blue { fill: #1a4f8b; }
+      .on { fill: #ffffff; font-family: "Segoe UI", Helvetica, Arial, sans-serif; }
+      .chip { fill: #ffffff; stroke: #d5dde6; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="960" height="840" rx="16"/>
+  <text class="ink" x="32" y="40" font-size="20" font-weight="650">kdb/q</text>
+  <text class="muted" x="32" y="64" font-size="13">Live rows through a tickerplant. History from dataset/ as date partitions.</text>
+
+  <rect class="card" x="24" y="88" width="444" height="112" rx="12"/>
+  <rect class="teal" x="40" y="104" width="22" height="22" rx="11"/>
+  <text class="on" x="51" y="120" font-size="12" font-weight="650" text-anchor="middle">1</text>
+  <text class="ink" x="72" y="120" font-size="15" font-weight="650">krakentool --q</text>
+  <text class="muted" x="40" y="150" font-size="13">Each event, as it arrives</text>
+  <text class="muted" x="40" y="172" font-size="13">IPC call .kt.ingest with one JSON object</text>
+
+  <rect class="card" x="492" y="88" width="444" height="112" rx="12"/>
+  <rect class="amber" x="508" y="104" width="22" height="22" rx="11"/>
+  <text class="on" x="519" y="120" font-size="12" font-weight="650" text-anchor="middle">2</text>
+  <text class="ink" x="540" y="120" font-size="15" font-weight="650">Pipe to feed.q</text>
+  <text class="muted" x="508" y="150" font-size="13">NDJSON on stdout</text>
+  <text class="muted" x="508" y="172" font-size="13">Forwarded when stdin closes</text>
+
+  <path class="line" marker-end="url(#qArrow)" d="M246 200 L246 236"/>
+  <path class="line" marker-end="url(#qArrow)" d="M714 200 L714 236"/>
+  <path class="line" d="M246 236 L714 236"/>
+  <path class="line" marker-end="url(#qArrow)" d="M480 236 L480 268"/>
+
+  <rect class="card" x="180" y="268" width="600" height="96" rx="12"/>
+  <text class="ink" x="480" y="300" font-size="15" font-weight="650" text-anchor="middle">Tickerplant  kdb/tick.q -p 5010</text>
+  <text class="muted" x="480" y="326" font-size="13" text-anchor="middle">.kt.ingest routes the object. Fans .kt.on to subscribers.</text>
+  <text class="muted" x="480" y="348" font-size="13" text-anchor="middle">The tickerplant does not keep the rows.</text>
+
+  <path class="line" marker-end="url(#qArrow)" d="M480 364 L480 400"/>
+
+  <rect class="card" x="24" y="400" width="912" height="132" rx="12"/>
+  <rect class="blue" x="40" y="416" width="22" height="22" rx="11"/>
+  <text class="on" x="51" y="432" font-size="12" font-weight="650" text-anchor="middle">3</text>
+  <text class="ink" x="72" y="432" font-size="15" font-weight="650">Realtime process  kdb/rdb.q</text>
+  <text class="muted" x="40" y="464" font-size="13">Subscribes to every table, then insert on .kt.on</text>
+  <g font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#1b2430">
+    <rect class="chip" x="40" y="484" width="88" height="32" rx="8"/>
+    <text x="84" y="505" text-anchor="middle">ticker</text>
+    <rect class="chip" x="140" y="484" width="80" height="32" rx="8"/>
+    <text x="180" y="505" text-anchor="middle">trade</text>
+    <rect class="chip" x="232" y="484" width="76" height="32" rx="8"/>
+    <text x="270" y="505" text-anchor="middle">book</text>
+    <rect class="chip" x="320" y="484" width="84" height="32" rx="8"/>
+    <text x="362" y="505" text-anchor="middle">level3</text>
+    <rect class="chip" x="416" y="484" width="72" height="32" rx="8"/>
+    <text x="452" y="505" text-anchor="middle">ohlc</text>
+    <rect class="chip" x="500" y="484" width="108" height="32" rx="8"/>
+    <text x="554" y="505" text-anchor="middle">ownTrade</text>
+    <rect class="chip" x="620" y="484" width="112" height="32" rx="8"/>
+    <text x="676" y="505" text-anchor="middle">ownOrder</text>
+  </g>
+
+  <text class="ink" x="32" y="576" font-size="15" font-weight="650">Load a file or a dataset</text>
+  <text class="muted" x="32" y="598" font-size="13">These stay in one q process. They do not need the tickerplant.</text>
+
+  <rect class="card" x="24" y="618" width="444" height="186" rx="12"/>
+  <rect x="40" y="634" width="22" height="22" rx="11" fill="#3d4a57"/>
+  <text class="on" x="51" y="650" font-size="12" font-weight="650" text-anchor="middle">4</text>
+  <text class="ink" x="72" y="650" font-size="15" font-weight="650">Captured NDJSON</text>
+  <text class="muted" x="40" y="682" font-size="13">q kdb/stdin.q events.jsonl</text>
+  <text class="muted" x="40" y="706" font-size="13">Same seven tables, in that process</text>
+  <text class="muted" x="40" y="730" font-size="13">The prompt stays open</text>
+  <text class="muted" x="40" y="754" font-size="13">Use this to inspect one saved run</text>
+
+  <rect class="card" x="492" y="618" width="444" height="186" rx="12"/>
+  <rect class="teal" x="508" y="634" width="22" height="22" rx="11"/>
+  <text class="on" x="519" y="650" font-size="12" font-weight="650" text-anchor="middle">5</text>
+  <text class="ink" x="540" y="650" font-size="15" font-weight="650">Historical database</text>
+  <text class="muted" x="508" y="682" font-size="13">q kdb/hdb.q dataset hdb</text>
+  <text class="muted" x="508" y="706" font-size="13">Daily, minute, and trade JSONL</text>
+  <text class="muted" x="508" y="730" font-size="13">Parted by date, then by sym</text>
+  <g font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#1b2430">
+    <rect class="chip" x="508" y="750" width="100" height="32" rx="8"/>
+    <text x="558" y="771" text-anchor="middle">ohlcv1d</text>
+    <rect class="chip" x="620" y="750" width="100" height="32" rx="8"/>
+    <text x="670" y="771" text-anchor="middle">ohlcv1m</text>
+    <rect class="chip" x="732" y="750" width="88" height="32" rx="8"/>
+    <text x="776" y="771" text-anchor="middle">trades</text>
+  </g>
+</svg>
