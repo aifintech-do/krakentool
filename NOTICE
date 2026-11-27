@@ -65,3 +65,12 @@ Other components
 
 The Python websockets package stays under the BSD 3-Clause license that
 ships with that package.
+
+AG Grid Community 32.3.3, used by the data browser in web/, is under the
+MIT license, Copyright (c) 2015-2024 AG GRID LTD. The permission notice is
+web/vendor/ag-grid-community.MIT.txt. web/vendor/ag-grid-community.LICENSE.txt
+is the upstream list of packages: the community packages are MIT, and the
+enterprise packages are commercial. This repository ships the community
+bundle only (ag-grid-community.min.js and the two community stylesheets).
+AG Grid is a product of AG Grid Ltd. krakentool is not affiliated with,
+sponsored by, or endorsed by AG Grid Ltd.

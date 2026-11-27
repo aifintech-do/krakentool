@@ -5,7 +5,12 @@ description = "Kraken Spot WebSocket API v2 market-data consumer for crypto and 
 readme = "README.md"
 requires-python = ">=3.11"
 license = "GPL-3.0-or-later"
-license-files = ["LICENSE", "NOTICE"]
+license-files = [
+    "LICENSE",
+    "NOTICE",
+    "web/vendor/ag-grid-community.MIT.txt",
+    "web/vendor/ag-grid-community.LICENSE.txt",
+]
 classifiers = [
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Programming Language :: Python :: 3",
@@ -24,3 +29,4 @@ packages = ["krakentool"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "kdb" = "krakentool/kdb"
+"web" = "krakentool/web"

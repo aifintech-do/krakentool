@@ -4,7 +4,7 @@
 
 [Kraken Spot](https://docs.kraken.com/exchange/api-reference/spot-websocket) is a public market plus an account API, so the same venue can feed a monitor, a research notebook, or a trading application. Public channels publish ticker, trades, the aggregated book, and candles for crypto and forex on one symbol format (`BTC/USD`, `EUR/USD`). Private channels and order entry use an API key. WebSocket API v2 is the current interface: normalised JSON, `BTC/USD` symbols, and both market data and order messages on a persistent connection.
 
-krakentool is a baseline on that API. It follows the live book, records your own fills and open orders, and builds a checked historical dataset you can replay before a strategy sends an order. That same stream can land in kdb+. `--q` publishes each event to a tickerplant, a realtime process keeps the rows, and `kdb/hdb.q` loads the dataset directory as a date-partitioned historical database. A trading application keeps this layer and adds order entry from the same v2 catalog (`add_order`, `amend_order`, `cancel_order`), documented in the [Spot WebSocket reference](https://docs.kraken.com/exchange/api-reference/spot-websocket).
+krakentool is a baseline on that API. It follows the live book, records your own fills and open orders, and builds a checked historical dataset you can replay before a strategy sends an order. That same stream can land in kdb+. `--q` publishes each event to a tickerplant, a realtime process keeps the rows, and `kdb/hdb.q` loads the dataset directory as a date-partitioned historical database. `kdb/browser.q` serves either set of tables in a page. A trading application keeps this layer and adds order entry from the same v2 catalog (`add_order`, `amend_order`, `cancel_order`), documented in the [Spot WebSocket reference](https://docs.kraken.com/exchange/api-reference/spot-websocket).
 
 | Layer | What it gives a trading app | In this project |
 | --- | --- | --- |
@@ -13,6 +13,7 @@ krakentool is a baseline on that API. It follows the live book, records your own
 | Level 3 book | Each resting order, for queue and microstructure work | `--channels level3` on `wss://ws-l3.kraken.com/v2` |
 | History | Daily and minute bars, trade ticks, a VWAP check | `krakentool dataset` |
 | kdb/q | Live tables for the stream, and a historical database from the dataset | `--q`, `kdb/tick.q`, `kdb/rdb.q`, `kdb/hdb.q` |
+| Data browser | Inspect those tables in a page | `kdb/browser.q`, AG Grid Community in `web/` |
 | Order entry | Place, amend, and cancel | [Spot WebSocket v2 order methods](https://docs.kraken.com/exchange/api-reference/spot-websocket) |
 
 ### API key and secret
@@ -71,6 +72,7 @@ More commands are in [Sample commands](#sample-commands).
 | `krakentool history` | Your open orders and latest fills, then live updates with `--follow` | `wss://ws-auth.kraken.com/v2` |
 | `krakentool dataset` | Daily OHLC, optional minute bars and trade ticks, VWAP check, gap policy | Public REST, paged on `last` |
 | `krakentool --q` | The live stream or `history`, published into kdb+ as each event arrives | IPC to `kdb/tick.q`, or a pipe into `kdb/feed.q` |
+| `q kdb/browser.q` | Table list, column types, and the latest rows | WebSocket from the page in `web/` to the same q process |
 
 A pair is `forex` when both legs are fiat (`EUR/USD`, `USD/JPY`). Anything else, including `BTC/USD` and `USDT/USD`, is `crypto`. Every market event carries that tag.
 
@@ -97,13 +99,16 @@ flowchart TD
   rest --> files["dataset/manifest.json<br/>and per-symbol JSONL"]
   files --> hdb["kdb/hdb.q"]
   hdb --> hfiles["Date partitions<br/>ohlcv1d, ohlcv1m, trades"]
+  rdb --> browser["Data browser<br/>kdb/browser.q"]
+  hfiles --> browser
+  browser --> page["AG Grid Community<br/>web/"]
 
   creds["API key in the environment<br/>or kraken auth login"] --> token["GetWebSocketsToken"]
   token --> l3
   token --> auth
 ```
 
-Public channels (`ticker`, `trade`, `book`, `ohlc`) share one socket. Level 3 cannot share it, so asking for both opens a second connection. Stdout is one JSON object per line. Connection status stays on stderr. With `--q`, that same object is also published to the tickerplant. The dataset files are a separate load through `kdb/hdb.q`. The figures in [kdb/q](#kdbq) show both paths.
+Public channels (`ticker`, `trade`, `book`, `ohlc`) share one socket. Level 3 cannot share it, so asking for both opens a second connection. Stdout is one JSON object per line. Connection status stays on stderr. With `--q`, that same object is also published to the tickerplant. The dataset files are a separate load through `kdb/hdb.q`. `kdb/browser.q` reads the realtime tables or the date partitions and draws them with AG Grid Community. The figures in [kdb/q](#kdbq) show both paths.
 
 ## Live public market data
 
@@ -277,6 +282,20 @@ Start the tickerplant, then the realtime process, then krakentool. The realtime 
 
 `gap` is true on a forward-filled candle. Symbol directories named like `BTC-USD` are read. `manifest.json` and other `*.json` files are skipped. Commands for each path are in [Sample commands](#sample-commands).
 
+### Data browser
+
+`kdb/browser.q` serves `web/` and answers three calls over the same port's websocket: `catalog`, `columns`, and `rows`. The page is static. It draws the result with [AG Grid Community](https://www.ag-grid.com/) 32.3.3, which is MIT, Copyright (c) 2015-2024 AG GRID LTD. The permission notice shipped with the bundle is [web/vendor/ag-grid-community.MIT.txt](../web/vendor/ag-grid-community.MIT.txt). The enterprise edition is not included. The shape of the call, a JSON object with an id and a function name, follows the approach in KX's article [Single Page Applications and kdb+](https://kx.com/blog/single-page-applications-and-kdb-react/). [ticktrackerkdb](https://github.com/vvishwa/ticktrackerkdb) is a larger example of that approach. This browser is separate code, and the page cannot evaluate arbitrary q.
+
+```bash
+q kdb/browser.q -p 5012
+q kdb/browser.q hdb -p 5012
+q kdb/browser.q localhost:5010 -p 5012
+```
+
+No argument serves the empty tables from `kdb/schema.q`. A path loads that historical database. An argument containing `:` subscribes to a tickerplant and inserts what arrives after the browser connects. Open `http://localhost:5012/`. The table list shows row counts. Choosing a table loads its latest rows, newest `time` first, up to the selected limit (50, 200, 500, or 2000). The symbol box limits the query to one symbol. Find filters the rows already on the page. Live reloads the catalog and the open table every two seconds.
+
+A date-partitioned database often has a table in some dates and not others. The loader and the browser run `.Q.chk` so every date has every table, and a count does not stop on a missing partition. Rows are read a date at a time, newest date first, until the limit is filled.
+
 ## Sample commands
 
 These assume [Get started](#get-started) has been run, so `uv run` uses the environment from `uv.lock`. Market events go to stdout. Connection status stays on stderr. `Ctrl-C` stops a live stream.
@@ -428,10 +447,13 @@ Load a saved file into memory, or turn a dataset directory into a historical dat
 uv run krakentool q-path
 q kdb/stdin.q events.jsonl
 q kdb/hdb.q dataset hdb
+q kdb/browser.q hdb -p 5012
 ```
 
 ## License
 
 Copyright (C) 2026 aifintech-do. krakentool is free software under the GNU General Public License, version 3 or any later version, as published by the Free Software Foundation. The full text is [LICENSE](../LICENSE). There is no warranty. `krakentool --version` prints the short notice. Each source file carries the same copyright and license header.
+
+The data browser uses AG Grid Community 32.3.3 under the MIT license, Copyright (c) 2015-2024 AG GRID LTD. The notice is [web/vendor/ag-grid-community.MIT.txt](../web/vendor/ag-grid-community.MIT.txt). [web/vendor/ag-grid-community.LICENSE.txt](../web/vendor/ag-grid-community.LICENSE.txt) is the upstream package list: community packages are MIT, and enterprise packages are commercial. Only the community bundle is in this repository. AG Grid is a product of AG Grid Ltd. krakentool is not affiliated with or endorsed by AG Grid Ltd. The `websockets` package stays under the BSD 3-Clause license that ships with it.
 
 kdb+ and q are products of KX Systems, Inc. and are not covered by the GPL grant above. KX publishes the requirement that every kdb+ process have a license at [Licensing kdb+](https://code.kx.com/q/learn/licensing/). Commercial terms: [On-Premise Licenced Software Terms, version 5.0](https://kx.com/legal/on-premise-licenced-software-terms/) and [General Terms and Conditions, version 5.0](https://kx.com/legal/terms-and-conditions-v5-0/). Community Edition limits: [usage restrictions](https://code.kx.com/licensing/usage-restrictions.html). Optional PyKX is Apache-2.0 except `q.so`, which is under KX's [Software License for q.so](https://github.com/KxSystems/pykx/blob/main/LICENSE.txt). KX and kdb+ are registered trademarks of KX Systems, Inc. krakentool is not affiliated with or endorsed by KX. See [NOTICE](../NOTICE).

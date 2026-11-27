@@ -1,0 +1,163 @@
+:root {
+  color: #1b2430;
+  background: #f4f6f8;
+  font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px;
+  padding: 18px 24px 14px;
+  background: #1b2430;
+  color: #f7f8fa;
+}
+
+.mark {
+  margin: 0;
+  color: #8fd0bf;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1, h2 { margin: 0; font-weight: 650; }
+
+h1 { font-size: 22px; }
+
+h2 { font-size: 14px; }
+
+.status {
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #3d4a57;
+  font-size: 13px;
+}
+
+.status.ok { background: #0f6e56; }
+.status.bad { background: #8a3b12; }
+
+.shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: calc(100vh - 78px);
+}
+
+aside {
+  padding: 16px;
+  border-right: 1px solid #d5dde6;
+  background: #fff;
+}
+
+.aside-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.tables {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tables button {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 6px;
+  padding: 8px 10px;
+  border: 1px solid #d5dde6;
+  border-radius: 8px;
+  background: #fff;
+  color: #1b2430;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tables button[aria-current="true"] {
+  border-color: #0f6e56;
+  background: #f3f7f5;
+}
+
+.tables .count { color: #52606d; }
+
+main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 16px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 8px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #52606d;
+  font-size: 12px;
+}
+
+label.grow { flex: 1 1 180px; }
+
+.check {
+  flex-direction: row;
+  align-items: center;
+  padding-bottom: 8px;
+}
+
+input, select, button {
+  font: inherit;
+  color: #1b2430;
+}
+
+input, select {
+  padding: 7px 8px;
+  border: 1px solid #d5dde6;
+  border-radius: 8px;
+  background: #fff;
+}
+
+button {
+  padding: 7px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: #0f6e56;
+  color: #fff;
+  cursor: pointer;
+}
+
+.aside-head button {
+  background: #1b2430;
+}
+
+.summary {
+  margin: 0 0 8px;
+  color: #52606d;
+  font-size: 13px;
+}
+
+.grid { flex: 1; min-height: 420px; width: 100%; }
+
+@media (max-width: 800px) {
+  .shell { grid-template-columns: 1fr; }
+  aside { border-right: 0; border-bottom: 1px solid #d5dde6; }
+}

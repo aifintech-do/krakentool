@@ -1,10 +1,10 @@
 # krakentool
 
-Public market-data consumer for the Kraken Spot WebSocket API v2, with a kdb+ path for live tables and a historical database. One connection carries crypto and forex (`BTC/USD` and `EUR/USD` use the same feed).
+Public market-data consumer for the Kraken Spot WebSocket API v2, with a kdb+ path for live tables, a historical database, and a browser for those tables. One connection carries crypto and forex (`BTC/USD` and `EUR/USD` use the same feed).
 
 ## Introduction
 
-Kraken Spot is a base for market-data tools and for a trading application. Public ticker, trades, book, and candles need no account. Your fills, the level 3 book, and later order entry (`add_order`, `amend_order`, `cancel_order`) use an API key. krakentool covers the market-data, account, and backtest layers, and can publish that same stream into kdb+. `--q` sends each event to a tickerplant. `kdb/hdb.q` loads a finished dataset as a date-partitioned historical database. How to create a key, and the Kraken documentation links, are in [Introduction](docs/FEATURES.md#introduction). The kdb figures are in [kdb/q](docs/FEATURES.md#kdbq).
+Kraken Spot is a base for market-data tools and for a trading application. Public ticker, trades, book, and candles need no account. Your fills, the level 3 book, and later order entry (`add_order`, `amend_order`, `cancel_order`) use an API key. krakentool covers the market-data, account, and backtest layers, and can publish that same stream into kdb+. `--q` sends each event to a tickerplant. `kdb/hdb.q` loads a finished dataset as a date-partitioned historical database. `kdb/browser.q` serves those tables in a browser. How to create a key, and the Kraken documentation links, are in [Introduction](docs/FEATURES.md#introduction). The kdb figures and the data browser are in [kdb/q](docs/FEATURES.md#kdbq).
 
 Create a key in Kraken Pro under **Settings → API → Create API key**. Turn on **Access WebSockets API**. The public value is `KRAKEN_API_KEY`. The private value, shown once, is `KRAKEN_API_SECRET`. Leave **Withdraw Funds** off unless that key must move funds.
 
@@ -82,7 +82,10 @@ q kdb/tick.q -p 5010
 q kdb/rdb.q localhost:5010
 uv run krakentool BTC/USD EUR/USD --channels ticker,trade --q localhost:5010 --duration 10
 q kdb/hdb.q dataset hdb
+q kdb/browser.q hdb -p 5012
 ```
+
+`kdb/browser.q` serves a small data browser at `http://localhost:5012/`. The page lists tables and loads the latest rows into AG Grid Community. A path argument opens a historical database. `localhost:5010` subscribes to the tickerplant instead. With no argument the page shows the empty schema tables. The websocket accepts only `catalog`, `columns`, and `rows`.
 
 ## License
 
@@ -91,5 +94,7 @@ krakentool is free software: you can redistribute it and/or modify it under the 
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the [GNU General Public License](LICENSE) for details.
 
 Copyright (C) 2026 aifintech-do. `krakentool --version` prints the short notice. The `websockets` dependency stays under the BSD 3-Clause license that ships with that package.
+
+The data browser in `web/` draws tables with AG Grid Community 32.3.3. That copy is under the MIT license, Copyright (c) 2015-2024 AG GRID LTD. The permission notice is [web/vendor/ag-grid-community.MIT.txt](web/vendor/ag-grid-community.MIT.txt). [web/vendor/ag-grid-community.LICENSE.txt](web/vendor/ag-grid-community.LICENSE.txt) lists the upstream packages: the community packages are MIT, and the enterprise packages are commercial. This project ships the community bundle only. AG Grid is a product of AG Grid Ltd. krakentool is not affiliated with or endorsed by AG Grid Ltd.
 
 kdb+ and q are products of KX Systems, Inc. This project does not include the interpreter or a license key. Running the scripts in `kdb/` requires your own KX license, described in [NOTICE](NOTICE): the [kdb+ licensing guide](https://code.kx.com/q/learn/licensing/), the [On-Premise Licenced Software Terms, version 5.0](https://kx.com/legal/on-premise-licenced-software-terms/), and the [KDB-X Community Edition restrictions](https://code.kx.com/licensing/usage-restrictions.html). KX and kdb+ are registered trademarks of KX Systems, Inc. krakentool is not affiliated with or endorsed by KX.

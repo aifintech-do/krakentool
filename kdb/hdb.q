@@ -44,18 +44,19 @@ if[2>count .z.x; -1 "usage: q kdb/hdb.q dataset hdb"; exit 1];
     )
    } each rows
   }
+.kthdb.one:{[x] $[(abs type x)=11h; x; 10h=type x; `$x; `]};
 .kthdb.trades:{[rows]
   if[0=count rows; :()];
   flip `time`sym`asset`side`typ`price`qty`tradeId!flip {
     (
       .kthdb.time x`time;
-      `$x`symbol;
-      `$x`asset_class;
-      `$string x`side;
-      `$string x`order_type;
+      .kthdb.one x`symbol;
+      .kthdb.one x`asset_class;
+      .kthdb.one x`side;
+      .kthdb.one x`order_type;
       "f"$x`price;
       "f"$x`volume;
-      `$string "j"$x`trade_id
+      .kthdb.one string "j"$x`trade_id
     )
    } each rows
   }
@@ -84,4 +85,5 @@ names:names where not names like "*.json";
 .kthdb.save[`ohlcv1d; .kthdb.daily];
 .kthdb.save[`ohlcv1m; .kthdb.minute];
 .kthdb.save[`trades; .kthdb.ticks];
+.Q.chk .kthdb.out;
 -1 "wrote ",(string count .kthdb.daily)," daily, ",(string count .kthdb.minute)," minute, ",(string count .kthdb.ticks)," trades";

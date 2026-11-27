@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>krakentool browser</title>
+  <link rel="stylesheet" href="vendor/ag-grid.css">
+  <link rel="stylesheet" href="vendor/ag-theme-quartz.css">
+  <link rel="stylesheet" href="browser.css">
+</head>
+<body>
+  <header class="top">
+    <div>
+      <p class="mark">krakentool</p>
+      <h1>Data browser</h1>
+    </div>
+    <p id="status" class="status" role="status">Connecting</p>
+  </header>
+  <div class="shell">
+    <aside>
+      <div class="aside-head">
+        <h2>Tables</h2>
+        <button id="refresh-catalog" type="button">Refresh</button>
+      </div>
+      <ul id="tables" class="tables"></ul>
+    </aside>
+    <main>
+      <form id="toolbar" class="toolbar">
+        <label>Rows
+          <select id="limit">
+            <option value="50">50</option>
+            <option value="200" selected>200</option>
+            <option value="500">500</option>
+            <option value="2000">2000</option>
+          </select>
+        </label>
+        <label>Symbol
+          <input id="sym" type="text" placeholder="BTC/USD" autocomplete="off" spellcheck="false">
+        </label>
+        <label class="grow">Find
+          <input id="quick" type="search" placeholder="Filter the loaded rows" autocomplete="off">
+        </label>
+        <label class="check"><input id="auto" type="checkbox"> Live</label>
+        <button id="load" type="submit">Load</button>
+      </form>
+      <p id="summary" class="summary">Choose a table.</p>
+      <div id="grid" class="ag-theme-quartz grid"></div>
+    </main>
+  </div>
+  <script src="vendor/ag-grid-community.min.js"></script>
+  <script src="browser.js"></script>
+</body>
+</html>
