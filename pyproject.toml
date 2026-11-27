@@ -21,3 +21,6 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["krakentool"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"kdb" = "krakentool/kdb"

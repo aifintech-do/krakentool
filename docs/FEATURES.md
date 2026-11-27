@@ -4,7 +4,7 @@
 
 [Kraken Spot](https://docs.kraken.com/exchange/api-reference/spot-websocket) is a public market plus an account API, so the same venue can feed a monitor, a research notebook, or a trading application. Public channels publish ticker, trades, the aggregated book, and candles for crypto and forex on one symbol format (`BTC/USD`, `EUR/USD`). Private channels and order entry use an API key. WebSocket API v2 is the current interface: normalised JSON, `BTC/USD` symbols, and both market data and order messages on a persistent connection.
 
-krakentool is a baseline on that API. It follows the live book, records your own fills and open orders, and builds a checked historical dataset you can replay before a strategy sends an order. A trading application keeps this layer and adds order entry from the same v2 catalog (`add_order`, `amend_order`, `cancel_order`), documented in the [Spot WebSocket reference](https://docs.kraken.com/exchange/api-reference/spot-websocket).
+krakentool is a baseline on that API. It follows the live book, records your own fills and open orders, and builds a checked historical dataset you can replay before a strategy sends an order. That same stream can land in kdb+. `--q` publishes each event to a tickerplant, a realtime process keeps the rows, and `kdb/hdb.q` loads the dataset directory as a date-partitioned historical database. A trading application keeps this layer and adds order entry from the same v2 catalog (`add_order`, `amend_order`, `cancel_order`), documented in the [Spot WebSocket reference](https://docs.kraken.com/exchange/api-reference/spot-websocket).
 
 | Layer | What it gives a trading app | In this project |
 | --- | --- | --- |
@@ -12,6 +12,7 @@ krakentool is a baseline on that API. It follows the live book, records your own
 | Your account | Open orders and recent fills, then live updates | `krakentool history` on `wss://ws-auth.kraken.com/v2` |
 | Level 3 book | Each resting order, for queue and microstructure work | `--channels level3` on `wss://ws-l3.kraken.com/v2` |
 | History | Daily and minute bars, trade ticks, a VWAP check | `krakentool dataset` |
+| kdb/q | Live tables for the stream, and a historical database from the dataset | `--q`, `kdb/tick.q`, `kdb/rdb.q`, `kdb/hdb.q` |
 | Order entry | Place, amend, and cancel | [Spot WebSocket v2 order methods](https://docs.kraken.com/exchange/api-reference/spot-websocket) |
 
 ### API key and secret
@@ -69,6 +70,7 @@ More commands are in [Sample commands](#sample-commands).
 | `krakentool --channels level3` | Per-order book (add, modify, delete) | `wss://ws-l3.kraken.com/v2` |
 | `krakentool history` | Your open orders and latest fills, then live updates with `--follow` | `wss://ws-auth.kraken.com/v2` |
 | `krakentool dataset` | Daily OHLC, optional minute bars and trade ticks, VWAP check, gap policy | Public REST, paged on `last` |
+| `krakentool --q` | The live stream or `history`, published into kdb+ as each event arrives | IPC to `kdb/tick.q`, or a pipe into `kdb/feed.q` |
 
 A pair is `forex` when both legs are fiat (`EUR/USD`, `USD/JPY`). Anything else, including `BTC/USD` and `USDT/USD`, is `crypto`. Every market event carries that tag.
 
@@ -89,14 +91,19 @@ flowchart TD
   pub --> out["NDJSON on stdout"]
   l3 --> out
   auth --> out
+  out --> qpub["--q  .kt.ingest"]
+  qpub --> tp["Tickerplant<br/>kdb/tick.q"]
+  tp --> rdb["Realtime tables<br/>kdb/rdb.q"]
   rest --> files["dataset/manifest.json<br/>and per-symbol JSONL"]
+  files --> hdb["kdb/hdb.q"]
+  hdb --> hfiles["Date partitions<br/>ohlcv1d, ohlcv1m, trades"]
 
   creds["API key in the environment<br/>or kraken auth login"] --> token["GetWebSocketsToken"]
   token --> l3
   token --> auth
 ```
 
-Public channels (`ticker`, `trade`, `book`, `ohlc`) share one socket. Level 3 cannot share it, so asking for both opens a second connection. Stdout is one JSON object per line. Connection status stays on stderr.
+Public channels (`ticker`, `trade`, `book`, `ohlc`) share one socket. Level 3 cannot share it, so asking for both opens a second connection. Stdout is one JSON object per line. Connection status stays on stderr. With `--q`, that same object is also published to the tickerplant. The dataset files are a separate load through `kdb/hdb.q`. The figures in [kdb/q](#kdbq) show both paths.
 
 ## Live public market data
 
@@ -217,6 +224,56 @@ A forex symbol, both legs fiat, adds `--asset-class forex` on every `kraken` cal
 | `<symbol>/trades.jsonl` | Price, size, side, trade id |
 | `<symbol>/validation.jsonl` | Candle VWAP against tick VWAP, with `ok` |
 | `<symbol>/gaps.json` | Missing daily and minute open times |
+
+## kdb/q
+
+q is a separate install. The scripts live in `kdb/` and ship with the package. `krakentool q-path` prints that directory. Put the script name before `-p`, as in `q kdb/tick.q -p 5010`. An address without a port uses 5010.
+
+`--q` and `--q-only` are on the live stream and on `history`. `dataset` does not publish live. It is loaded afterwards by `kdb/hdb.q`.
+
+### Flow
+
+![Live events into a tickerplant, a captured file into memory, and a dataset into a historical database](images/q-flow.svg)
+
+Two live paths share one tickerplant. `--q` opens a kdb IPC session and calls `.kt.ingest` with one JSON object per event. The call is asynchronous, so the publisher does not wait for a reply. `KRAKENTOOL_PYKX=1` sends that same call through [PyKX](https://code.kx.com/pykx/) when PyKX is installed. Otherwise krakentool speaks IPC itself. PyKX is not installed by `uv sync`.
+
+The pipe is the other live path. `kdb/feed.q` reads NDJSON from stdin and calls `.kt.ingest` on each line when stdin closes. Use `--q` when rows should arrive while the stream is still running.
+
+`kdb/tick.q` routes on `channel`, or on `kind` for your own fills and orders. It replaces the default insert with a fan-out of `.kt.on` and does not store rows. `kdb/rdb.q` subscribes to all seven tables and inserts what it receives.
+
+A captured file and a dataset stay in one q process. `kdb/stdin.q` loads NDJSON into the seven memory tables and leaves the prompt open. `kdb/hdb.q` reads `ohlcv-1d.jsonl`, `ohlcv-1m.jsonl`, and `trades.jsonl` from each symbol directory and writes a date-partitioned database with `.Q.dpft`, parted by `sym` and sorted by `sym` and `time`.
+
+### Sequence
+
+![Sequence from starting the tickerplant and realtime process through .kt.ingest and .kt.on](images/q-sequence.svg)
+
+Start the tickerplant, then the realtime process, then krakentool. The realtime process has to be subscribed before events are published. The tickerplant does not replay earlier rows. Stdout still prints each event. `--q-only` publishes and skips stdout. `--q-only` without `--q` is an error.
+
+### Live tables
+
+`kdb/schema.q` builds these empty tables. Book and level 3 become one row per price level. The ticker column for the last trade price is `lastPx`, because `last` is a reserved name in q. The JSON field stays `last`.
+
+| Table | One row is | Main columns |
+| --- | --- | --- |
+| `ticker` | One quote | `time`, `sym`, `asset`, `kind`, `bid`, `bidQty`, `ask`, `askQty`, `lastPx`, `volume`, `vwap` |
+| `trade` | One print | `time`, `sym`, `asset`, `kind`, `side`, `price`, `qty`, `tradeId` |
+| `book` | One level on one side | `time`, `sym`, `asset`, `kind`, `side`, `price`, `qty` |
+| `level3` | One resting order | `time`, `sym`, `asset`, `kind`, `event`, `side`, `orderId`, `price`, `qty` |
+| `ohlc` | One candle update | `time`, `sym`, `asset`, `kind`, `interval`, `open`, `high`, `low`, `close`, `vwap`, `volume`, `n` |
+| `ownTrade` | One of your fills | `time`, `sym`, `asset`, `kind`, `side`, `price`, `qty`, `fee`, `maker`, `orderId`, `tradeId` |
+| `ownOrder` | One of your order events | `time`, `sym`, `asset`, `kind`, `status`, `side`, `price`, `limitPrice`, `qty`, `filled`, `fee`, `orderId` |
+
+`asset` is `crypto` or `forex`. `kind` is `snapshot` or `update`. Timestamps are q timestamps. A numeric JSON time is unix seconds, including a fractional part. An RFC3339 string such as `2026-11-01T01:56:00.000000Z` is accepted as well.
+
+### Historical tables
+
+| Table | Source file | Columns |
+| --- | --- | --- |
+| `ohlcv1d` | `ohlcv-1d.jsonl` | `time`, `sym`, `asset`, `interval`, `open`, `high`, `low`, `close`, `vwap`, `volume`, `n`, `gap` |
+| `ohlcv1m` | `ohlcv-1m.jsonl` | same columns as `ohlcv1d` |
+| `trades` | `trades.jsonl` | `time`, `sym`, `asset`, `side`, `typ`, `price`, `qty`, `tradeId` |
+
+`gap` is true on a forward-filled candle. Symbol directories named like `BTC-USD` are read. `manifest.json` and other `*.json` files are skipped. Commands for each path are in [Sample commands](#sample-commands).
 
 ## Sample commands
 
@@ -339,6 +396,36 @@ uv run krakentool dataset BTC/USD \
   --minutes --ticks \
   --gaps forward-fill \
   --out dataset
+```
+
+### kdb/q
+
+q is already installed and `QHOME` points at it. The script name comes before `-p`. Start the tickerplant, then the realtime process, then publish. `--q-only` skips stdout. `history` accepts the same flags.
+
+```bash
+q kdb/tick.q -p 5010
+q kdb/rdb.q localhost:5010
+uv run krakentool BTC/USD EUR/USD \
+  --channels ticker,trade,book,ohlc \
+  --q localhost:5010 \
+  --duration 10
+uv run krakentool BTC/USD EUR/USD --channels level3 --l3-depth 10 --q localhost:5010 --q-only --duration 10
+uv run krakentool history --q localhost:5010
+```
+
+Pipe NDJSON. Rows are forwarded when krakentool exits and the pipe closes:
+
+```bash
+uv run krakentool BTC/USD EUR/USD --channels ticker,trade --duration 10 \
+  | q kdb/feed.q localhost:5010
+```
+
+Load a saved file into memory, or turn a dataset directory into a historical database. `krakentool q-path` prints the directory of these scripts. Set `KRAKENTOOL_PYKX=1` before `--q` when PyKX should carry the IPC call.
+
+```bash
+uv run krakentool q-path
+q kdb/stdin.q events.jsonl
+q kdb/hdb.q dataset hdb
 ```
 
 ## License

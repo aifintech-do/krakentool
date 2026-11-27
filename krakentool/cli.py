@@ -37,6 +37,7 @@ from krakentool.history import (
     stream_executions,
     to_v2_symbol,
 )
+from krakentool.qipc import QError, QPublisher, q_script_dir
 from krakentool.protocol import AUTH_WS_URL as _AUTH_WS_URL
 from krakentool.protocol import (
     BOOK_DEPTHS,
@@ -110,6 +111,49 @@ def format_text(event: dict[str, Any]) -> str:
             f"interval={event.get('interval')} {ts}"
         )
     return json.dumps(event, separators=(",", ":"), default=str)
+
+
+def add_q_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--q",
+        metavar="HOST:PORT",
+        help="Also publish each event to a kdb+ tickerplant, for example localhost:5010",
+    )
+    parser.add_argument(
+        "--q-only",
+        action="store_true",
+        help="Publish to kdb+ and do not write events to stdout",
+    )
+
+
+def open_q(address: str | None, q_only: bool) -> QPublisher | None:
+    if q_only and not address:
+        raise QError("--q-only needs --q HOST:PORT")
+    if not address:
+        return None
+    return QPublisher(address)
+
+
+def make_emit(
+    out: TextIO,
+    *,
+    fmt: str,
+    publisher: QPublisher | None,
+    q_only: bool,
+    text,
+):
+    def emit(event: dict[str, Any]) -> None:
+        if publisher is not None:
+            publisher.publish(event)
+        if q_only:
+            return
+        if fmt == "text":
+            line = text(event)
+        else:
+            line = json.dumps(event, separators=(",", ":"), default=str)
+        print(line, file=out, flush=True)
+
+    return emit
 
 
 def _num(value: Any) -> str:
@@ -213,12 +257,16 @@ def build_parser() -> argparse.ArgumentParser:
         default=30.0,
         help="Seconds between application-level pings (Kraken requires < 60)",
     )
+    add_q_arguments(parser)
     parser.add_argument("--version", action=VersionAction)
     return parser
 
 
 def main(argv: list[str] | None = None, out: TextIO | None = None) -> int:
     args_list = list(sys.argv[1:] if argv is None else argv)
+    if args_list and args_list[0] == "q-path":
+        print(q_script_dir())
+        return 0
     if args_list and args_list[0] == "history":
         return history_main(args_list[1:], out)
     if args_list and args_list[0] == "dataset":
@@ -262,15 +310,26 @@ def main(argv: list[str] | None = None, out: TextIO | None = None) -> int:
         ", ".join(sorted(classes)),
     )
     sink = out or sys.stdout
-    return asyncio.run(
-        _run(
-            consumer,
-            sink,
-            fmt=args.format,
-            duration=args.duration,
-            max_messages=args.max_messages,
+    try:
+        publisher = open_q(args.q, args.q_only)
+    except QError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    try:
+        return asyncio.run(
+            _run(
+                consumer,
+                sink,
+                fmt=args.format,
+                duration=args.duration,
+                max_messages=args.max_messages,
+                publisher=publisher,
+                q_only=args.q_only,
+            )
         )
-    )
+    finally:
+        if publisher is not None:
+            publisher.close()
 
 
 async def _run(
@@ -280,6 +339,8 @@ async def _run(
     fmt: str,
     duration: float | None,
     max_messages: int | None,
+    publisher: QPublisher | None = None,
+    q_only: bool = False,
 ) -> int:
     stop = asyncio.Event()
     loop = asyncio.get_running_loop()
@@ -289,12 +350,7 @@ async def _run(
         except NotImplementedError:
             pass
 
-    def emit(event: dict[str, Any]) -> None:
-        if fmt == "text":
-            line = format_text(event)
-        else:
-            line = json.dumps(event, separators=(",", ":"), default=str)
-        print(line, file=out, flush=True)
+    emit = make_emit(out, fmt=fmt, publisher=publisher, q_only=q_only, text=format_text)
 
     try:
         count = await consumer.run(
@@ -358,6 +414,7 @@ def history_main(argv: list[str], out: TextIO | None = None) -> int:
         default="json",
         help="stdout format. json is one object per line",
     )
+    add_q_arguments(parser)
     parser.add_argument("--version", action=VersionAction)
     args = parser.parse_args(argv)
     logging.basicConfig(
@@ -376,6 +433,11 @@ def history_main(argv: list[str], out: TextIO | None = None) -> int:
         return 2
     sink = out or sys.stdout
     try:
+        publisher = open_q(args.q, args.q_only)
+    except QError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    try:
         count = asyncio.run(
             _history_run(
                 sink,
@@ -386,11 +448,16 @@ def history_main(argv: list[str], out: TextIO | None = None) -> int:
                 symbols=symbols,
                 follow=args.follow,
                 duration=args.duration,
+                publisher=publisher,
+                q_only=args.q_only,
             )
         )
     except HistoryError as exc:
         print(str(exc), file=sys.stderr)
         return 1
+    finally:
+        if publisher is not None:
+            publisher.close()
     logging.getLogger("krakentool").info("wrote %d account events", count)
     return 0
 
@@ -405,6 +472,8 @@ async def _history_run(
     symbols: set[str] | None,
     follow: bool,
     duration: float | None,
+    publisher: QPublisher | None = None,
+    q_only: bool = False,
 ) -> int:
     stop = asyncio.Event()
     loop = asyncio.get_running_loop()
@@ -414,12 +483,7 @@ async def _history_run(
         except NotImplementedError:
             pass
 
-    def emit(event: dict[str, Any]) -> None:
-        if fmt == "text":
-            line = format_history_text(event)
-        else:
-            line = json.dumps(event, separators=(",", ":"), default=str)
-        print(line, file=out, flush=True)
+    emit = make_emit(out, fmt=fmt, publisher=publisher, q_only=q_only, text=format_history_text)
 
     token = account_token()
     logging.getLogger("krakentool").info(

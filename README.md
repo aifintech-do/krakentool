@@ -1,10 +1,10 @@
 # krakentool
 
-Public market-data consumer for the Kraken Spot WebSocket API v2. One connection carries crypto and forex (`BTC/USD` and `EUR/USD` use the same feed).
+Public market-data consumer for the Kraken Spot WebSocket API v2, with a kdb+ path for live tables and a historical database. One connection carries crypto and forex (`BTC/USD` and `EUR/USD` use the same feed).
 
 ## Introduction
 
-Kraken Spot is a base for market-data tools and for a trading application. Public ticker, trades, book, and candles need no account. Your fills, the level 3 book, and later order entry (`add_order`, `amend_order`, `cancel_order`) use an API key. krakentool covers the market-data, account, and backtest layers. The full write-up, including how to create a key and the documentation links, is in [Introduction](docs/FEATURES.md#introduction).
+Kraken Spot is a base for market-data tools and for a trading application. Public ticker, trades, book, and candles need no account. Your fills, the level 3 book, and later order entry (`add_order`, `amend_order`, `cancel_order`) use an API key. krakentool covers the market-data, account, and backtest layers, and can publish that same stream into kdb+. `--q` sends each event to a tickerplant. `kdb/hdb.q` loads a finished dataset as a date-partitioned historical database. How to create a key, and the Kraken documentation links, are in [Introduction](docs/FEATURES.md#introduction). The kdb figures are in [kdb/q](docs/FEATURES.md#kdbq).
 
 Create a key in Kraken Pro under **Settings → API → Create API key**. Turn on **Access WebSockets API**. The public value is `KRAKEN_API_KEY`. The private value, shown once, is `KRAKEN_API_SECRET`. Leave **Withdraw Funds** off unless that key must move funds.
 
@@ -70,6 +70,19 @@ uv run krakentool dataset BTC/USD EUR/USD \
 ```
 
 `--start` and `--drill-start` accept `YYYY-MM-DD`, `YYYY-MM-DDTHH:MM:SSZ`, or unix seconds. Minute history only goes back about 12 hours (720 one-minute candles), so keep the drill window inside that.
+
+## kdb/q
+
+Live events go to a tickerplant that fans rows out and does not keep them. A realtime process subscribes and inserts. `--q localhost:5010` publishes each event over kdb IPC as it arrives. `--q-only` skips stdout. The pipe path, `kdb/feed.q`, forwards NDJSON when stdin closes. A captured file loads with `kdb/stdin.q`. `kdb/hdb.q` turns `dataset/` into date partitions `ohlcv1d`, `ohlcv1m`, and `trades`.
+
+`q` is a separate install. Put the script name before `-p`. `KRAKENTOOL_PYKX=1` sends the same `.kt.ingest` call through PyKX when it is installed. Flow and sequence figures: [kdb/q](docs/FEATURES.md#kdbq).
+
+```bash
+q kdb/tick.q -p 5010
+q kdb/rdb.q localhost:5010
+uv run krakentool BTC/USD EUR/USD --channels ticker,trade --q localhost:5010 --duration 10
+q kdb/hdb.q dataset hdb
+```
 
 ## License
 
