@@ -1,6 +1,7 @@
 / Load a krakentool dataset directory into a date-partitioned kdb database.
 / Copyright (C) 2026 aifintech-do
 / SPDX-License-Identifier: GPL-3.0-or-later
+/ Runs on kdb+, licensed separately by KX Systems, Inc. See NOTICE.
 / q kdb/hdb.q dataset hdb
 
 if[2>count .z.x; -1 "usage: q kdb/hdb.q dataset hdb"; exit 1];

@@ -227,7 +227,9 @@ A forex symbol, both legs fiat, adds `--asset-class forex` on every `kraken` cal
 
 ## kdb/q
 
-q is a separate install. The scripts live in `kdb/` and ship with the package. `krakentool q-path` prints that directory. Put the script name before `-p`, as in `q kdb/tick.q -p 5010`. An address without a port uses 5010.
+q is a separate install. kdb+ and the q language are products of KX Systems, Inc., and this package does not include the interpreter or a `k4.lic` / `kc.lic` key. Every kdb+ process needs your own KX license. Commercial use follows your agreement with KX, including the [On-Premise Licenced Software Terms, version 5.0](https://kx.com/legal/on-premise-licenced-software-terms/) (1 October 2026) and the [General Terms and Conditions, version 5.0](https://kx.com/legal/terms-and-conditions-v5-0/). [KDB-X Community Edition](https://code.kx.com/q/learn/licensing/) is free for personal and commercial use, subject to [KX's usage restrictions](https://code.kx.com/licensing/usage-restrictions.html). The commercial terms restrict combining the Licensed Software with copyleft materials. Read that term before loading these GPL scripts into a commercially licensed kdb+. Details and trademarks are in [NOTICE](../NOTICE).
+
+The scripts live in `kdb/` and ship with the package. They are original krakentool source under GPL-3.0-or-later, not KX's tick.q. `krakentool q-path` prints that directory. Put the script name before `-p`, as in `q kdb/tick.q -p 5010`. An address without a port uses 5010.
 
 `--q` and `--q-only` are on the live stream and on `history`. `dataset` does not publish live. It is loaded afterwards by `kdb/hdb.q`.
 
@@ -235,7 +237,7 @@ q is a separate install. The scripts live in `kdb/` and ship with the package. `
 
 ![Live events into a tickerplant, a captured file into memory, and a dataset into a historical database](images/q-flow.svg)
 
-Two live paths share one tickerplant. `--q` opens a kdb IPC session and calls `.kt.ingest` with one JSON object per event. The call is asynchronous, so the publisher does not wait for a reply. `KRAKENTOOL_PYKX=1` sends that same call through [PyKX](https://code.kx.com/pykx/) when PyKX is installed. Otherwise krakentool speaks IPC itself. PyKX is not installed by `uv sync`.
+Two live paths share one tickerplant. `--q` opens a kdb IPC session and calls `.kt.ingest` with one JSON object per event. The call is asynchronous, so the publisher does not wait for a reply. `KRAKENTOOL_PYKX=1` sends that same call through [PyKX](https://code.kx.com/pykx/) when PyKX is installed. Otherwise krakentool speaks IPC itself. PyKX is not installed by `uv sync`. Its source is Apache-2.0. The `q.so` library inside it is under KX's Software License for q.so. See [NOTICE](../NOTICE).
 
 The pipe is the other live path. `kdb/feed.q` reads NDJSON from stdin and calls `.kt.ingest` on each line when stdin closes. Use `--q` when rows should arrive while the stream is still running.
 
@@ -400,7 +402,7 @@ uv run krakentool dataset BTC/USD \
 
 ### kdb/q
 
-q is already installed and `QHOME` points at it. The script name comes before `-p`. Start the tickerplant, then the realtime process, then publish. `--q-only` skips stdout. `history` accepts the same flags.
+q is already installed, `QHOME` points at it, and a KX license key (`k4.lic` or `kc.lic`) is in place. See [NOTICE](../NOTICE). The script name comes before `-p`. Start the tickerplant, then the realtime process, then publish. `--q-only` skips stdout. `history` accepts the same flags.
 
 ```bash
 q kdb/tick.q -p 5010
@@ -431,3 +433,5 @@ q kdb/hdb.q dataset hdb
 ## License
 
 Copyright (C) 2026 aifintech-do. krakentool is free software under the GNU General Public License, version 3 or any later version, as published by the Free Software Foundation. The full text is [LICENSE](../LICENSE). There is no warranty. `krakentool --version` prints the short notice. Each source file carries the same copyright and license header.
+
+kdb+ and q are products of KX Systems, Inc. and are not covered by the GPL grant above. KX publishes the requirement that every kdb+ process have a license at [Licensing kdb+](https://code.kx.com/q/learn/licensing/). Commercial terms: [On-Premise Licenced Software Terms, version 5.0](https://kx.com/legal/on-premise-licenced-software-terms/) and [General Terms and Conditions, version 5.0](https://kx.com/legal/terms-and-conditions-v5-0/). Community Edition limits: [usage restrictions](https://code.kx.com/licensing/usage-restrictions.html). Optional PyKX is Apache-2.0 except `q.so`, which is under KX's [Software License for q.so](https://github.com/KxSystems/pykx/blob/main/LICENSE.txt). KX and kdb+ are registered trademarks of KX Systems, Inc. krakentool is not affiliated with or endorsed by KX. See [NOTICE](../NOTICE).

@@ -28,13 +28,19 @@ VERSION_BANNER = (
     f"{__copyright__}\n"
     "License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\n"
     "This is free software: you are free to change and redistribute it.\n"
-    "There is NO WARRANTY, to the extent permitted by law."
+    "There is NO WARRANTY, to the extent permitted by law.\n"
+    "\n"
+    "kdb+ and q are products of KX Systems, Inc. and are licensed separately.\n"
+    "See the NOTICE file or <https://code.kx.com/q/learn/licensing/>."
 )
 
 LICENSE_EPILOG = (
     "This program is free software under the GNU General Public License, "
     "version 3 or any later version. It comes with ABSOLUTELY NO WARRANTY. "
-    "See the LICENSE file or <https://www.gnu.org/licenses/>."
+    "See the LICENSE file or <https://www.gnu.org/licenses/>. "
+    "kdb+ and q are products of KX Systems, Inc. and are not included. "
+    "Their license is described in NOTICE and at "
+    "<https://code.kx.com/q/learn/licensing/>."
 )
 
 

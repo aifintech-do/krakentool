@@ -1,6 +1,7 @@
 / krakentool tickerplant. Listens for .kt.ingest and fans rows out to subscribers.
 / Copyright (C) 2026 aifintech-do
 / SPDX-License-Identifier: GPL-3.0-or-later
+/ Runs on kdb+, licensed separately by KX Systems, Inc. See NOTICE.
 / Start with: q kdb/tick.q -p 5010
 / A subscriber calls .kt.sub[`ticker`trade`book`level3`ohlc`ownTrade`ownOrder]
 

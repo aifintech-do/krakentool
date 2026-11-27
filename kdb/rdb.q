@@ -1,6 +1,7 @@
 / krakentool realtime database. Subscribes to the tickerplant and keeps the tables in memory.
 / Copyright (C) 2026 aifintech-do
 / SPDX-License-Identifier: GPL-3.0-or-later
+/ Runs on kdb+, licensed separately by KX Systems, Inc. See NOTICE.
 / Start with: q kdb/rdb.q localhost:5010
 
 .kdb.dir:{

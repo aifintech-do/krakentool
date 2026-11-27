@@ -19,6 +19,8 @@
 
 The tickerplant evaluates ``.kt.ingest`` on one JSON object. PyKX is used when
 it is installed. Otherwise the same call is sent with the kdb IPC protocol.
+kdb+ and q are products of KX Systems, Inc. and are licensed separately.
+See the NOTICE file.
 """
 
 from __future__ import annotations
