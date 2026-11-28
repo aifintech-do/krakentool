@@ -294,6 +294,10 @@ q kdb/browser.q localhost:5010 -p 5012
 
 No argument, and any argument containing `:`, subscribes to a tickerplant (`localhost:5010` when the address is omitted) and keeps the rows that arrive after the browser connects. The tickerplant does not replay earlier rows. A path loads that historical database and does not subscribe. Open `http://localhost:5012/`. The table list shows row counts. On a live feed the page opens `trade` when that table already has rows, and each new row is pushed into the grid while Live is on. The chart above the grid plots those same rows: candles when the table has open, high, low, and close, bid and ask together on a quote table, or any other numeric column from the series menu. Find and the symbol box apply to the chart as well as the grid. The symbol box limits which pushed rows are shown. Find filters the rows already on the page. The row limit keeps the newest rows.
 
+![BTC/USD and EUR/USD trade prices from a ten-minute live run, oldest at the left](images/browser-chart.svg)
+
+The figure is the `price` series from one run of `uv run krakentool BTC/USD EUR/USD --channels ticker,trade --q localhost:5010`, kept by `q kdb/browser.q localhost:5010 -p 5012`. The window is 04:35:00Z to 04:45:00Z on 28 November 2026, ten minutes of the live feed: 682 `BTC/USD` prints and 138 `EUR/USD` prints. Each panel is one symbol, which is how the page charts a table that holds more than one symbol. A quote table opens on bid, ask, and last. A table with open, high, low, and close opens as candles.
+
 A date-partitioned database often has a table in some dates and not others. The loader and the browser run `.Q.chk` so every date has every table, and a count does not stop on a missing partition. Rows are read a date at a time, newest date first, until the limit is filled.
 
 ## Sample commands

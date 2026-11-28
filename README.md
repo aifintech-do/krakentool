@@ -85,7 +85,7 @@ q kdb/hdb.q dataset hdb
 q kdb/browser.q hdb -p 5013
 ```
 
-`kdb/browser.q localhost:5010 -p 5012` subscribes to the tickerplant and serves `http://localhost:5012/`. Each new row is pushed into the open grid. With no address it follows `localhost:5010`. A path such as `hdb` opens that historical database and does not subscribe. The page can call only `mode`, `catalog`, `columns`, and `rows`.
+`kdb/browser.q localhost:5010 -p 5012` subscribes to the tickerplant and serves `http://localhost:5012/`. Each new row is pushed into the open grid, and the page charts those rows above the grid. With no address it follows `localhost:5010`. A path such as `hdb` opens that historical database and does not subscribe. The page can call only `mode`, `catalog`, `columns`, and `rows`. A ten-minute trade chart from one live run is in [Data browser](docs/FEATURES.md#data-browser).
 
 ## License
 
