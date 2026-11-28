@@ -79,13 +79,13 @@ Live events go to a tickerplant that fans rows out and does not keep them. A rea
 
 ```bash
 q kdb/tick.q -p 5010
-q kdb/rdb.q localhost:5010
-uv run krakentool BTC/USD EUR/USD --channels ticker,trade --q localhost:5010 --duration 10
+q kdb/browser.q localhost:5010 -p 5012
+uv run krakentool BTC/USD EUR/USD --channels ticker,trade --q localhost:5010
 q kdb/hdb.q dataset hdb
-q kdb/browser.q hdb -p 5012
+q kdb/browser.q hdb -p 5013
 ```
 
-`kdb/browser.q` serves a small data browser at `http://localhost:5012/`. The page lists tables and loads the latest rows into AG Grid Community. A path argument opens a historical database. `localhost:5010` subscribes to the tickerplant instead. With no argument the page shows the empty schema tables. The websocket accepts only `catalog`, `columns`, and `rows`.
+`kdb/browser.q localhost:5010 -p 5012` subscribes to the tickerplant and serves `http://localhost:5012/`. Each new row is pushed into the open grid. With no address it follows `localhost:5010`. A path such as `hdb` opens that historical database and does not subscribe. The page can call only `mode`, `catalog`, `columns`, and `rows`.
 
 ## License
 

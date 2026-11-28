@@ -44,6 +44,19 @@
         <button id="load" type="submit">Load</button>
       </form>
       <p id="summary" class="summary">Choose a table.</p>
+      <section class="chart-wrap">
+        <div class="chart-bar">
+          <h2>Chart</h2>
+          <p id="chart-readout" class="chart-readout">The loaded rows, oldest at the left.</p>
+          <label id="chart-sym-label">Symbol
+            <select id="chart-sym"></select>
+          </label>
+          <label>Series
+            <select id="chart-series"></select>
+          </label>
+        </div>
+        <canvas id="chart" aria-label="Chart of the loaded rows"></canvas>
+      </section>
       <div id="grid" class="ag-theme-quartz grid"></div>
     </main>
   </div>

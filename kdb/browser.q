@@ -3,9 +3,11 @@
 / SPDX-License-Identifier: GPL-3.0-or-later
 / Runs on kdb+, licensed separately by KX Systems, Inc. See NOTICE.
 / q kdb/browser.q -p 5012
-/ q kdb/browser.q hdb -p 5012
 / q kdb/browser.q localhost:5010 -p 5012
-/ The page calls only catalog, columns, and rows. It cannot evaluate arbitrary q.
+/ q kdb/browser.q hdb -p 5012
+/ No argument follows localhost:5010. An address follows that tickerplant.
+/ A path loads a historical database and does not subscribe.
+/ The page calls only mode, catalog, columns, and rows. It cannot evaluate arbitrary q.
 
 .ktb.dir:{
   p:ssr[string .z.f;"\\";"/"];
@@ -15,19 +17,12 @@
 .ktb.here:system "cd";
 .ktb.web:(.ktb.here),"/",.ktb.dir[],"../web";
 .ktb.arg:$[0<count .z.x; .z.x 0; ""];
-.ktb.live:":" in .ktb.arg;
-if[0=count .ktb.arg;
-  system "l ",.ktb.dir[],"schema.q";
-  .kt.init[];
- ];
-if[.ktb.live;
-  system "l ",.ktb.dir[],"schema.q";
-  .kt.init[];
-  .kt.on:{[name;row] name insert row};
-  .ktb.link:hopen hsym `$.ktb.arg;
-  .ktb.link(`.kt.sub; `ticker`trade`book`level3`ohlc`ownTrade`ownOrder);
- ];
-if[(0<count .ktb.arg) and not .ktb.live;
+.ktb.addr:$[0=count .ktb.arg; "localhost:5010"; .ktb.arg];
+.ktb.wantlive:(0=count .ktb.arg) or ":" in .ktb.arg;
+.ktb.live:0b;
+.ktb.source:"";
+.ktb.clients:`int$();
+if[(0<count .ktb.arg) and not .ktb.wantlive;
   .ktb.db:hsym `$.ktb.arg;
   .ktb.filled:.Q.chk .ktb.db;
   system "l ",.ktb.arg;
@@ -95,7 +90,32 @@ if[(0<count .ktb.arg) and not .ktb.live;
   if[`time in cols data; data:`time xdesc data];
   .ktb.plain lim sublist data
   };
-.ktb.calls:`catalog`columns`rows!(.ktb.catalog;.ktb.columns;.ktb.rows);
+.ktb.mode:{[ignored] `live`source!(.ktb.live; .ktb.source)};
+.ktb.calls:`mode`catalog`columns`rows!(.ktb.mode;.ktb.catalog;.ktb.columns;.ktb.rows);
+.ktb.push:{[name;row]
+  if[0=count .ktb.clients; :()];
+  rec:first .ktb.plain enlist row;
+  msg:.j.j `push`table`row!(1b; string name; rec);
+  {[h;m] @[neg[h]; m; {}]}[;msg] each .ktb.clients;
+  };
+.ktb.onfeed:{[name;row]
+  .[insert; (name; row); {`}];
+  .ktb.push[name; row];
+  };
+.ktb.attach:{[addr]
+  .ktb.source:addr;
+  system "l ",.ktb.dir[],"schema.q";
+  .kt.init[];
+  .kt.on:.ktb.onfeed;
+  .ktb.link:@[{hopen hsym `$x}; addr; {0Ni}];
+  if[null .ktb.link; -1 "tickerplant ",addr," is not open"; :()];
+  .ktb.link(`.kt.sub; `ticker`trade`book`level3`ohlc`ownTrade`ownOrder);
+  .ktb.live:1b;
+  -1 "following ",addr;
+  };
+if[.ktb.wantlive; .ktb.attach .ktb.addr];
+.z.wo:{.ktb.clients,:.z.w};
+.z.wc:{.ktb.clients:.ktb.clients except x};
 .ktb.errtext:{[body]
   $[10h=type body; body; -11h=type body; string body; raze string body]
   };

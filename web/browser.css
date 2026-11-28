@@ -155,7 +155,37 @@ button {
   font-size: 13px;
 }
 
-.grid { flex: 1; min-height: 420px; width: 100%; }
+.chart-wrap {
+  margin: 0 0 12px;
+  padding: 10px 12px 8px;
+  border: 1px solid #d5dde6;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.chart-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 6px;
+}
+
+.chart-readout {
+  flex: 1 1 180px;
+  margin: 0 0 8px;
+  color: #52606d;
+  font-size: 12px;
+}
+
+#chart {
+  display: block;
+  width: 100%;
+  height: 220px;
+  cursor: crosshair;
+}
+
+.grid { flex: 1; min-height: 320px; width: 100%; }
 
 @media (max-width: 800px) {
   .shell { grid-template-columns: 1fr; }

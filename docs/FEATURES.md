@@ -284,7 +284,7 @@ Start the tickerplant, then the realtime process, then krakentool. The realtime 
 
 ### Data browser
 
-`kdb/browser.q` serves `web/` and answers three calls over the same port's websocket: `catalog`, `columns`, and `rows`. The page is static. It draws the result with [AG Grid Community](https://www.ag-grid.com/) 32.3.3, which is MIT, Copyright (c) 2015-2024 AG GRID LTD. The permission notice shipped with the bundle is [web/vendor/ag-grid-community.MIT.txt](../web/vendor/ag-grid-community.MIT.txt). The enterprise edition is not included. The shape of the call, a JSON object with an id and a function name, follows the approach in KX's article [Single Page Applications and kdb+](https://kx.com/blog/single-page-applications-and-kdb-react/). [ticktrackerkdb](https://github.com/vvishwa/ticktrackerkdb) is a larger example of that approach. This browser is separate code, and the page cannot evaluate arbitrary q.
+`kdb/browser.q` serves `web/` and answers four calls over the same port's websocket: `mode`, `catalog`, `columns`, and `rows`. The page is static. It draws the result with [AG Grid Community](https://www.ag-grid.com/) 32.3.3, which is MIT, Copyright (c) 2015-2024 AG GRID LTD. The permission notice shipped with the bundle is [web/vendor/ag-grid-community.MIT.txt](../web/vendor/ag-grid-community.MIT.txt). The enterprise edition is not included. The shape of the call, a JSON object with an id and a function name, follows the approach in KX's article [Single Page Applications and kdb+](https://kx.com/blog/single-page-applications-and-kdb-react/). [ticktrackerkdb](https://github.com/vvishwa/ticktrackerkdb) is a larger example of that approach. This browser is separate code, and the page cannot evaluate arbitrary q.
 
 ```bash
 q kdb/browser.q -p 5012
@@ -292,7 +292,7 @@ q kdb/browser.q hdb -p 5012
 q kdb/browser.q localhost:5010 -p 5012
 ```
 
-No argument serves the empty tables from `kdb/schema.q`. A path loads that historical database. An argument containing `:` subscribes to a tickerplant and inserts what arrives after the browser connects. Open `http://localhost:5012/`. The table list shows row counts. Choosing a table loads its latest rows, newest `time` first, up to the selected limit (50, 200, 500, or 2000). The symbol box limits the query to one symbol. Find filters the rows already on the page. Live reloads the catalog and the open table every two seconds.
+No argument, and any argument containing `:`, subscribes to a tickerplant (`localhost:5010` when the address is omitted) and keeps the rows that arrive after the browser connects. The tickerplant does not replay earlier rows. A path loads that historical database and does not subscribe. Open `http://localhost:5012/`. The table list shows row counts. On a live feed the page opens `trade` when that table already has rows, and each new row is pushed into the grid while Live is on. The chart above the grid plots those same rows: candles when the table has open, high, low, and close, bid and ask together on a quote table, or any other numeric column from the series menu. Find and the symbol box apply to the chart as well as the grid. The symbol box limits which pushed rows are shown. Find filters the rows already on the page. The row limit keeps the newest rows.
 
 A date-partitioned database often has a table in some dates and not others. The loader and the browser run `.Q.chk` so every date has every table, and a count does not stop on a missing partition. Rows are read a date at a time, newest date first, until the limit is filled.
 
